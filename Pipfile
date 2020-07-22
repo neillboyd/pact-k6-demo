@@ -1,0 +1,6 @@
+pact-python
+flask
+flask_restful
+pytest
+urllib3
+requests
