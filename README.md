@@ -4,6 +4,8 @@ This is a very quick demo application to get both Pact and K6 running against a 
 
 Note - if you are using MacOS, you probably don't want to use the default Python installation - [this then instead](https://opensource.com/article/19/5/python-3-default-mac#what-to-do)
 
+TODO: K6 instructions still need added :-)
+
 ## General Setup
 You will have to have Python installed on your machine. To get started, install all the required Python dependencies
 
@@ -11,7 +13,7 @@ You will have to have Python installed on your machine. To get started, install 
 pip install Pipfile
 ```
 
-## Without Docker (PACT & K6)
+## Without Broker
 Running without Docker will mean that you cannot make use of the PACT Broker in this demo - though it is not pre-requisite in general as the Broker can be launched in many ways, Docker makes it a convenience. Nonetheless, to get going:
 
 Run the initial tests with `Pytest`, this will create a contract from the PACT written unit tests (Explore the `tests\test_consumer.py` file for understanding how these are structured):
@@ -70,6 +72,29 @@ Verifying a pact between UserServiceClient and UserService
 If the `provider` was to change any of it's implementation details without a new contract established, this check will fail and ultimately provide information to the teams that this will break a dependent service's workflow.
 
 
-## With Docker (PACT w/ Broker & K6)
+## With the Broker (Needs Docker)
+To execute with a broker - we'll start the broker via Docker Compose:
 
-## Final Thoughts
+```
+cd broker
+docker-compose up
+```
+
+You can now access the broker on your localhost with a username of `pactbroker` and a password of `pactbroker`. The remaining steps are similar - be sure to explore the broker service as you execute each step so you can see how it fits, it essentially acts as a storage for all of your contracts and what version of a service they relate to.
+
+To create the contract and send it to the broker:
+
+```
+pytest --publish-pact 0.1
+```
+
+This will again run the unit tests and generate the PACT contract and publish it to the broker as `Version 0.1` of the `Consumer Service` - you can check this out on the broker UI.
+
+To validate your provider against this, use the bash script included (and take a look at it!):
+
+```
+python demo/provider.py
+./verify_pact.sh 0.2
+```
+
+This will execute the verification script against a hypothetical `Version 0.2` of the provider against the consumer pact 0.1 - play around with the services and make various changes to see the impact.
